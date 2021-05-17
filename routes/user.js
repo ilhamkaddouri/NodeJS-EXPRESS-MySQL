@@ -1,13 +1,10 @@
 const router = require("express").Router();
-const mysqlconnection = require('../connection')
+const user = require('../controllers/user')
 
-router.get('/',(req,res)=>{
-    mysqlconnection.query('SELECT * FROM user;',(err,rows,fields)=>{
-        console.log("hey")
-        if(err) console.log("error is " + err)
-        if(!err) res.send(rows)
-    })
-})
+router.get('/',user.getUsers)
+router.post('/',user.addUser)
+router.delete('/:id',user.deleteUser)
+router.put('/:id',user.updateUser)
 
 module.exports = router
 
