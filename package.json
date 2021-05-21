@@ -3,20 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "jest": {
+    "verbose": true
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "dotenv": "^9.0.2",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.2",
     "mysql2": "^2.2.5"
   },
   "devDependencies": {
+    "jest": "^26.6.3",
     "nodemon": "^2.0.7"
   }
 }

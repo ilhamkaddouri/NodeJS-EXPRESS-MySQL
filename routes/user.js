@@ -8,5 +8,6 @@ router.put('/:id',user.updateUser)
 
 router.post('/login',user.login)
 router.post('/register',user.register)
+router.post('/hello',user.hello)
 module.exports = router
 

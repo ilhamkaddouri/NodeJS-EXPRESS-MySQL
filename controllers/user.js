@@ -1,7 +1,17 @@
 const mysqlconnection = require('../connection');
 const bcrypt = require('bcryptjs');
+const {validatePassword} = require('../validation/user')
 const saltRounds = 10;
 
+
+exports.hello = (req,res)=>{
+    const password = req.body.password
+    if(validatePassword(password)){
+        res.status(200).send('mtchie matchie')
+    }else{
+        res.status(400).send('ughh try again')
+    }
+}
 
 exports.login = (req,res)=>{
     let email= req.body.email;
@@ -100,3 +110,5 @@ exports.updateUser=(req,res)=>{
         else res.status(200).send(rows)
     })
 }
+
+
