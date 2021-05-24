@@ -6,7 +6,7 @@ exports.getUsers= async()=>{
 }
 
 exports.getUserByEmail= async(email)=>{
-    const [rows]= await mysqlconnection.promise().query('SELECT email FROM user where email=?;',[email]);
+    const [rows]= await mysqlconnection.promise().query('SELECT * FROM user where email=?;',[email]);
     return rows;
 }
 

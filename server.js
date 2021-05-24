@@ -1,15 +1,6 @@
-const express = require('express')
-const dotenv = require('dotenv')
-const app = express()
-dotenv.config()
+const app = require('./app')
 
 
-const userRouter= require('./routes/user')
-
-app.use(express.json())
-app.use('/api/user',userRouter)
-
-
-app.listen(5000,()=>{
+app.listen(7000,()=>{
     console.log("yeeey ia m running on a port ~~")
 })
