@@ -2,7 +2,7 @@ const mysqlconnection = require('../connection');
 const bcrypt = require('bcryptjs');
 const {validatePassword} = require('../validation/user')
 const saltRounds = 10;
-
+const userService  = require('../services/user')
 
 exports.hello = (req,res)=>{
     const password = req.body.password
@@ -13,37 +13,32 @@ exports.hello = (req,res)=>{
     }
 }
 
-exports.login = (req,res)=>{
-    let email= req.body.email;
-    let password = req.body.password;
+exports.login = async (req,res)=>{
+    let {email, password}= req.body;
+
     if(!email || !password){
         res.status(400).send('All fields are required!')
     }
-    mysqlconnection.query('SELECT email, password from user WHERE email=?',[email],(err,result,fields)=>{
-        if(err) res.status(500).send(err);
-        else{
-            if(result.length>0){
-                let validpass = bcrypt.compareSync(password, result[0].password)
-                console.log(result[0].password)
-                if(!validpass){
-                    res.send({message:'Email or password is incorrect'})
-                }else{
-                    res.status(200).send({message:'success'})
-                }
-                
-            }else{
-                res.send({message : 'email does not exist'})
+
+    try{
+        const rows = await userService.getUser(email)
+        if(rows.length<=0) res.status(400).send({message: 'No email Found'})
+
+        else{let validpass = bcrypt.compareSync(password, rows[0].password)
+            if(!validpass){
+                res.send({message:'Email or password is incorrect'})
             }
+            res.status(200).send(rows)
         }
-    })
+    }catch(err){
+        console.log(err)
+        res.status(500).send({error: err})
+    }
+    
 }
 
-exports.register =   (req,res)=>{
-    let firstname = req.body.firstname;
-    let lastname = req.body.lastname;
-    let email = req.body.email;
-    let username= req.body.username;
-    let password = req.body.password;
+exports.register =   async (req,res)=>{
+    const {firstname, lastname, email, username, password} = req.body
     const newsalt =  bcrypt.genSaltSync(saltRounds);
     const hashedpassword =  bcrypt.hashSync(password,newsalt);
 
@@ -51,64 +46,53 @@ exports.register =   (req,res)=>{
         res.status(400).send({message:'All fields are required!'})
     }
 
-    if(email){
-        mysqlconnection.query('SELECT email from user where email=?',[email],(err,result)=>{
-            if(err) res.status(500).send({message:err})
-            else{
-                if(result.length>0){
-                    res.status(400).send({message:'Email already exists!'})
-                }else{
-                    mysqlconnection.query('INSERT INTO user(firstname,lastname,username,email,password) values(?,?,?,?,?)',[firstname,lastname,username,email,hashedpassword],(err,result)=>{
-                        if(err){ console.log(err); res.send({message:err})}
-                        else{
-                            console.log('success')
-                            res.status(201).send({message:result})
-                        }
-                
-                    })
-                }
-            }
-        })
+    try{
+        const rows= await userService.getUserByEmail(email)
+        if(rows.length>0){
+            res.status(400).send({message:'Email already exists!'})
+        }
+        if(!validatePassword(password)) res.status(400).send({message : "Password has to be of at least length 6 and have at least one number, one small letter and one arrow letter"})
+        const insertId = await userService.addUser(firstname,lastname,email,username,hashedpassword)
+        console.log(insertId)
+        res.status(201).send({userId:insertId})    
+    }catch(err){
+        console.log(err)
+        res.status(500).send({message:err})
     }
     
+}
+
+exports.getUsers =  async (req,res)=>{
+    try{
+        const rows= await userService.getUsers()
+        if(rows.length>0) res.status(200).send(rows)
+    }catch(err){
+        console.log(err)
+        res.status(500).send(err)
+    }
     
 }
 
-exports.getUsers =  (req,res)=>{
-    mysqlconnection.query('SELECT * FROM user;',(err,rows,fields)=>{
-        
-        if(err) console.log("error is " + err)
-        if(!err) res.send(rows)
-    })
-}
 
-exports.addUser = (req,res)=>{
-    let firstname = req.body.firstname;
-    let email = req.body.email;
-    let password = req.body.password
-    mysqlconnection.query('INSERT INTO user(firstname,email,password) values(?,?,?)', [firstname,email,password],(err,rows,fields)=>{
-        if(err) console.log("error is " + err)
-        if(!err) res.status(201).send(rows)
-    })
-}
-
-exports.deleteUser = (req,res)=>{
+exports.deleteUser = async (req,res)=>{
     let user_id = req.params.id
-    mysqlconnection.query('DELETE FROM user WHERE id=?',[user_id],(err,rows,fields)=>{
-        if(err) res.status(500).send(err)
-        else res.status(200).send(rows)
-    })
+    try{
+        const id = await userService.deleteUser(user_id)
+        res.status(200).send({message:"user deleted"})
+    }catch(err){
+        res.status(500).send(err)
+    }
 }
 
 exports.updateUser=(req,res)=>{
-    let firstname = req.body.firstname;
-    let email = req.body.email;
-    let password = req.body.password;
+    let {firstname, lastname, email,username, password} = req.body;
     let user_id= req.params.id
-    mysqlconnection.query('UPDATE user SET firstname = ? ,email=?, password=? WHERE id=?',[firstname,email,password,user_id],(err,rows,fields)=>{
-        if(err) res.status(500).send(err)
-        else res.status(200).send(rows)
-    })
+    try{
+        const rows= userService.updateUser(firstname, lastname, email,username, password, user_id)
+        res.status(201).send(rows)
+    }catch(err){
+        res.status(500).send(err)
+    }
 }
 
 
