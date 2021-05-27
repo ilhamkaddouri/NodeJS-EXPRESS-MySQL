@@ -1,8 +1,8 @@
-const mysqlconnection = require('../connection');
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
 const {validatePassword} = require('../validation/user')
-const saltRounds = 10;
 const userService  = require('../services/user')
+const saltRounds = 10;
 
 exports.hello = (req,res)=>{
     const password = req.body.password
@@ -28,7 +28,12 @@ exports.login = async (req,res)=>{
             if(!validpass){
                 return res.send({message:'Email or password is incorrect'})
             }
-            return res.status(200).send(rows)
+            let user = {email, iat:Math.floor(Date.now() / 1000) + 60*60 }
+            jwt.sign({user},process.env.ACCESS_TOKEN_SECRET,(err,token)=>{
+                console.log(token + "is token")
+                return res.status(200).send(token)
+            })
+           
         }
     }catch(err){
         return res.status(500).send({error: err})

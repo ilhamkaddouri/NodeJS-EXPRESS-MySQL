@@ -1,5 +1,7 @@
-const app = require('../../app')
-const request = require("supertest");
+const app = require('./app')
+const supertest = require("supertest");
+const request = supertest(app)
+
 const chance = require('chance')
 const ch = new chance()
 
@@ -13,7 +15,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.statusCode).toBe(201)
         })
 
@@ -25,7 +27,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.headers['content-type']).toEqual(expect.stringContaining('json'))
         })
         it("should return user object in response",async ()=>{
@@ -36,7 +38,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.body.user).toBeDefined()
         })
         it("should fails when firstname is missing",async ()=>{
@@ -46,7 +48,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.statusCode).toBe(400)
         })
         it("should fails when laststname is missing",async ()=>{
@@ -56,7 +58,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.statusCode).toBe(400)
         })
         it("should fails when email is missing",async ()=>{
@@ -66,7 +68,7 @@ describe("Users route",()=>{
                 username: ch.word({length: 15   }),
                 password : "12345679Aa"
             }
-            const response= await request(app).post('/api/user/register').send(params)
+            const response= await request.post('/api/user/register').send(params)
             expect(response.statusCode).toBe(400)
         })
         // it("should fails when password is missing", ()=>{
